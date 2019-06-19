@@ -7,7 +7,7 @@ export class SetCommand extends BaseCommand {
 
     public static examples: string[] = [
         `Set the log level
-$ teton env:set CORE_LOG_LEVEL info
+$ qredit env:set CORE_LOG_LEVEL info
 `,
     ];
 

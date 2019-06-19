@@ -5,7 +5,7 @@ import { BaseCommand } from "../command";
 export class StatusCommand extends AbstractStatusCommand {
     public static description: string = "Show the relay status";
 
-    public static examples: string[] = [`$ teton relay:status`];
+    public static examples: string[] = [`$ qredit relay:status`];
 
     public static flags: CommandFlags = {
         ...BaseCommand.flagsNetwork,

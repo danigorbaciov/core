@@ -5,7 +5,7 @@ import { BaseCommand } from "../command";
 export class StatusCommand extends AbstractStatusCommand {
     public static description: string = "Show the core status";
 
-    public static examples: string[] = [`$ teton core:status`];
+    public static examples: string[] = [`$ qredit core:status`];
 
     public static flags: CommandFlags = {
         ...BaseCommand.flagsNetwork,

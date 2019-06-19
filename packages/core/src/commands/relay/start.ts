@@ -8,25 +8,25 @@ export class StartCommand extends AbstractStartCommand {
 
     public static examples: string[] = [
         `Run a relay with a pm2 daemon
-$ teton relay:start --network=mainnet
+$ qredit relay:start --network=mainnet
 `,
         `Run a genesis relay
-$ teton relay:start --networkStart
+$ qredit relay:start --networkStart
 `,
         `Disable any discovery by other peers
-$ teton relay:start --disableDiscovery
+$ qredit relay:start --disableDiscovery
 `,
         `Skip the initial discovery
-$ teton relay:start --skipDiscovery
+$ qredit relay:start --skipDiscovery
 `,
         `Ignore the minimum network reach
-$ teton relay:start --ignoreMinimumNetworkReach
+$ qredit relay:start --ignoreMinimumNetworkReach
 `,
         `Start a seed
-$ teton relay:start --launchMode=seed
+$ qredit relay:start --launchMode=seed
 `,
         `Run a relay without a daemon
-$ teton relay:start --no-daemon
+$ qredit relay:start --no-daemon
 `,
     ];
 

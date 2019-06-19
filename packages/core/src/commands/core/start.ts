@@ -8,25 +8,25 @@ export class StartCommand extends AbstractStartCommand {
 
     public static examples: string[] = [
         `Run core with a daemon
-$ teton core:start
+$ qredit core:start
 `,
         `Run core as genesis
-$ teton core:start --networkStart
+$ qredit core:start --networkStart
 `,
         `Disable any discovery by other peers
-$ teton core:start --disableDiscovery
+$ qredit core:start --disableDiscovery
 `,
         `Skip the initial discovery
-$ teton core:start --skipDiscovery
+$ qredit core:start --skipDiscovery
 `,
         `Ignore the minimum network reach
-$ teton core:start --ignoreMinimumNetworkReach
+$ qredit core:start --ignoreMinimumNetworkReach
 `,
         `Start a seed
-$ teton core:start --launchMode=seed
+$ qredit core:start --launchMode=seed
 `,
         `Run core without a daemon
-$ teton core:start --no-daemon
+$ qredit core:start --no-daemon
 `,
     ];
 

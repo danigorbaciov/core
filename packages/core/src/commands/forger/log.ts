@@ -6,7 +6,7 @@ import { BaseCommand } from "../command";
 export class LogCommand extends AbstractLogCommand {
     public static description: string = "Show the forger log";
 
-    public static examples: string[] = [`$ teton forger:log`];
+    public static examples: string[] = [`$ qredit forger:log`];
 
     public static flags: CommandFlags = {
         ...BaseCommand.flagsNetwork,

@@ -8,22 +8,22 @@ export class RunCommand extends BaseCommand {
 
     public static examples: string[] = [
         `Run core
-$ teton core:run
+$ qredit core:run
 `,
         `Run core as genesis
-$ teton core:run --networkStart
+$ qredit core:run --networkStart
 `,
         `Disable any discovery by other peers
-$ teton core:run --disableDiscovery
+$ qredit core:run --disableDiscovery
 `,
         `Skip the initial discovery
-$ teton core:run --skipDiscovery
+$ qredit core:run --skipDiscovery
 `,
         `Ignore the minimum network reach
-$ teton core:run --ignoreMinimumNetworkReach
+$ qredit core:run --ignoreMinimumNetworkReach
 `,
         `Start a seed
-$ teton core:run --launchMode=seed
+$ qredit core:run --launchMode=seed
 `,
     ];
 

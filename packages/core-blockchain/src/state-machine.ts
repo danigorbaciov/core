@@ -118,7 +118,7 @@ blockchainMachine.actionMap = (blockchain: Blockchain) => ({
     },
 
     exitApp() {
-        app.forceExit("Failed to startup blockchain. Exiting Teton Core!");
+        app.forceExit("Failed to startup blockchain. Exiting Qredit Core!");
     },
 
     async init() {

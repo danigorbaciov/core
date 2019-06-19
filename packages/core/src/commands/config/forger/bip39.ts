@@ -10,7 +10,7 @@ export class BIP39Command extends BaseCommand {
 
     public static examples: string[] = [
         `Configure a delegate using a BIP39 passphrase
-$ teton config:forger:bip39 --bip39="..."
+$ qredit config:forger:bip39 --bip39="..."
 `,
     ];
 

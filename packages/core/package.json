@@ -127,7 +127,7 @@
                 "./dist/hooks/command_not_found/suggest"
             ]
         },
-        "bin": "teton",
+        "bin": "qredit",
         "topics": {
             "config": {
                 "description": "manage core config variables"

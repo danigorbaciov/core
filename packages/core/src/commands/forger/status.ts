@@ -5,7 +5,7 @@ import { BaseCommand } from "../command";
 export class StatusCommand extends AbstractStatusCommand {
     public static description: string = "Show the forger status";
 
-    public static examples: string[] = [`$ teton forger:status`];
+    public static examples: string[] = [`$ qredit forger:status`];
 
     public static flags: CommandFlags = {
         ...BaseCommand.flagsNetwork,

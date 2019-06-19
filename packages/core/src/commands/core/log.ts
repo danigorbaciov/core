@@ -6,7 +6,7 @@ import { BaseCommand } from "../command";
 export class LogCommand extends AbstractLogCommand {
     public static description: string = "Show the core log";
 
-    public static examples: string[] = [`$ teton core:log`];
+    public static examples: string[] = [`$ qredit core:log`];
 
     public static flags: CommandFlags = {
         ...BaseCommand.flagsNetwork,
