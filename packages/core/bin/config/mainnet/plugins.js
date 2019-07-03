@@ -34,7 +34,6 @@ module.exports = {
     },
     "@arkecosystem/core-p2p": {
         port: process.env.CORE_P2P_PORT || 4101,
-        minimumNetworkReach: 2,
         coldStart: 10,
     },
     "@arkecosystem/core-blockchain": {},
