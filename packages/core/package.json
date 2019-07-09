@@ -17,31 +17,31 @@
     "main": "dist/index",
     "types": "dist/index",
     "bin": {
-        "teton": "./bin/run"
+        "qredit": "./bin/run"
     },
     "scripts": {
-        "teton": "./bin/run",
+        "qredit": "./bin/run",
         "build": "yarn clean && yarn compile && yarn copy",
         "build:watch": "yarn clean && yarn copy && yarn compile -w",
         "clean": "del dist",
         "compile": "../../node_modules/typescript/bin/tsc",
         "copy": "cd ./src && cpy './config' '../dist/' --parents && cd ..",
-        "debug:forger": "node --inspect-brk yarn teton forger:run",
-        "debug:relay": "node --inspect-brk yarn teton relay:run",
-        "debug:start": "node --inspect-brk yarn teton core:run",
-        "forger:devnet": "cross-env CORE_PATH_CONFIG=./bin/config/devnet yarn teton forger:run",
-        "forger:mainnet": "cross-env CORE_PATH_CONFIG=./bin/config/mainnet yarn teton forger:run",
-        "forger:testnet": "cross-env CORE_PATH_CONFIG=./bin/config/testnet yarn teton forger:run --env=test",
-        "full:testnet": "cross-env CORE_PATH_CONFIG=./bin/config/testnet yarn teton core:run --networkStart --env=test",
+        "debug:forger": "node --inspect-brk yarn qredit forger:run",
+        "debug:relay": "node --inspect-brk yarn qredit relay:run",
+        "debug:start": "node --inspect-brk yarn qredit core:run",
+        "forger:devnet": "cross-env CORE_PATH_CONFIG=./bin/config/devnet yarn qredit forger:run",
+        "forger:mainnet": "cross-env CORE_PATH_CONFIG=./bin/config/mainnet yarn qredit forger:run",
+        "forger:testnet": "cross-env CORE_PATH_CONFIG=./bin/config/testnet yarn qredit forger:run --env=test",
+        "full:testnet": "cross-env CORE_PATH_CONFIG=./bin/config/testnet yarn qredit core:run --networkStart --env=test",
         "prepack": "../../node_modules/.bin/oclif-dev manifest && npm shrinkwrap",
         "postpack": "rm -f oclif.manifest.json",
         "prepublishOnly": "yarn build",
-        "relay:devnet": "cross-env CORE_PATH_CONFIG=./bin/config/devnet yarn teton relay:run",
-        "relay:mainnet": "cross-env CORE_PATH_CONFIG=./bin/config/mainnet yarn teton relay:run",
-        "relay:testnet": "cross-env CORE_PATH_CONFIG=./bin/config/testnet yarn teton relay:run --env=test",
-        "start:devnet": "cross-env CORE_PATH_CONFIG=./bin/config/devnet yarn teton core:run",
-        "start:mainnet": "cross-env CORE_PATH_CONFIG=./bin/config/mainnet yarn teton core:run",
-        "start:testnet": "cross-env CORE_PATH_CONFIG=./bin/config/testnet yarn teton core:run --env=test"
+        "relay:devnet": "cross-env CORE_PATH_CONFIG=./bin/config/devnet yarn qredit relay:run",
+        "relay:mainnet": "cross-env CORE_PATH_CONFIG=./bin/config/mainnet yarn qredit relay:run",
+        "relay:testnet": "cross-env CORE_PATH_CONFIG=./bin/config/testnet yarn qredit relay:run --env=test",
+        "start:devnet": "cross-env CORE_PATH_CONFIG=./bin/config/devnet yarn qredit core:run",
+        "start:mainnet": "cross-env CORE_PATH_CONFIG=./bin/config/mainnet yarn qredit core:run",
+        "start:testnet": "cross-env CORE_PATH_CONFIG=./bin/config/testnet yarn qredit core:run --env=test"
     },
     "dependencies": {
         "@arkecosystem/core-api": "^2.4.15",
@@ -127,7 +127,7 @@
                 "./dist/hooks/command_not_found/suggest"
             ]
         },
-        "bin": "teton",
+        "bin": "qredit",
         "topics": {
             "config": {
                 "description": "manage core config variables"

@@ -8,7 +8,7 @@ export class GetCommand extends BaseCommand {
 
     public static examples: string[] = [
         `Get the log level
-$ teton env:get CORE_LOG_LEVEL
+$ qredit env:get CORE_LOG_LEVEL
 `,
     ];
 

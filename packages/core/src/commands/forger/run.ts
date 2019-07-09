@@ -8,10 +8,10 @@ export class RunCommand extends BaseCommand {
 
     public static examples: string[] = [
         `Run a forger with a bip39 passphrase
-$ teton forger:run --bip39="..."
+$ qredit forger:run --bip39="..."
 `,
         `Run a forger with an encrypted bip38
-$ teton forger:run --bip38="..." --password="..."
+$ qredit forger:run --bip38="..." --password="..."
 `,
     ];
 

@@ -1,10 +1,10 @@
-# Teton Core
+# Qredit Core
 
 [![License: MIT](https://badgen.now.sh/badge/license/MIT/green)](https://opensource.org/licenses/MIT)
 
 ## Introduction
 
-This repository contains all plugins that make up the Teton Core.
+This repository contains all plugins that make up the Qredit Core.
 
 ## Documentation
 

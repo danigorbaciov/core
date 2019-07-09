@@ -34,7 +34,7 @@ module.exports = {
     },
     "@arkecosystem/core-p2p": {
         server: {
-            port: process.env.CORE_P2P_PORT || 8002,
+            port: process.env.CORE_P2P_PORT || 4102,
         },
         minimumNetworkReach: 5,
     },
@@ -43,13 +43,13 @@ module.exports = {
     "@arkecosystem/core-api": {
         enabled: !process.env.CORE_API_DISABLED,
         host: process.env.CORE_API_HOST || "0.0.0.0",
-        port: process.env.CORE_API_PORT || 8003,
+        port: process.env.CORE_API_PORT || 4103,
     },
     "@arkecosystem/core-webhooks": {
         enabled: process.env.CORE_WEBHOOKS_ENABLED,
         server: {
             host: process.env.CORE_WEBHOOKS_HOST || "0.0.0.0",
-            port: process.env.CORE_WEBHOOKS_PORT || 8004,
+            port: process.env.CORE_WEBHOOKS_PORT || 4104,
             whitelist: ["127.0.0.1", "::ffff:127.0.0.1"],
         },
     },

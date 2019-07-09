@@ -199,11 +199,11 @@ fi
 
 success "Installed system updates!"
 
-heading "Installing Teton Core..."
+heading "Installing Qredit Core..."
 
 cd /home/vagrant
-git clone https://github.com/tetondevelopment/core.git teton-core -b develop
-cd teton-core
+git clone https://github.com/qredit/core.git qredit-core -b develop
+cd qredit-core
 yarn setup
 
-success "Installed Teton Core!"
+success "Installed Qredit Core!"

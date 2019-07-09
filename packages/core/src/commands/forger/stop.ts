@@ -8,10 +8,10 @@ export class StopCommand extends AbstractStopCommand {
 
     public static examples: string[] = [
         `Stop the forger
-$ teton forger:stop
+$ qredit forger:stop
 `,
         `Stop the forger daemon
-$ teton forger:stop --daemon
+$ qredit forger:stop --daemon
 `,
     ];
 

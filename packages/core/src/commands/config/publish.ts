@@ -10,7 +10,7 @@ export class PublishCommand extends BaseCommand {
 
     public static examples: string[] = [
         `Publish the configuration for the mainnet network
-$ teton config:publish --network=mainnet
+$ qredit config:publish --network=mainnet
 `,
     ];
 

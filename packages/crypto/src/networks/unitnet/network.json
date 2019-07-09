@@ -11,8 +11,8 @@
     "slip44": 1,
     "aip20": 0,
     "client": {
-        "token": "UARK",
-        "symbol": "UѦ",
-        "explorer": "http://uexplorer.ark.io"
+        "token": "UXQR",
+        "symbol": "UXQR",
+        "explorer": "http://uexplorer.qredit.io"
     }
 }

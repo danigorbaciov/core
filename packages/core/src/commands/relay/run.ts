@@ -8,22 +8,22 @@ export class RunCommand extends BaseCommand {
 
     public static examples: string[] = [
         `Run a relay
-$ teton relay:run
+$ qredit relay:run
 `,
         `Run a genesis relay
-$ teton relay:run --networkStart
+$ qredit relay:run --networkStart
 `,
         `Disable any discovery by other peers
-$ teton relay:run --disableDiscovery
+$ qredit relay:run --disableDiscovery
 `,
         `Skip the initial discovery
-$ teton relay:run --skipDiscovery
+$ qredit relay:run --skipDiscovery
 `,
         `Ignore the minimum network reach
-$ teton relay:run --ignoreMinimumNetworkReach
+$ qredit relay:run --ignoreMinimumNetworkReach
 `,
         `Start a seed
-$ teton relay:run --launchMode=seed
+$ qredit relay:run --launchMode=seed
 `,
     ];
 

@@ -7,7 +7,7 @@ export class RestartCommand extends AbstractRestartCommand {
 
     public static examples: string[] = [
         `Restart the core
-$ teton core:restart
+$ qredit core:restart
 `,
     ];
 

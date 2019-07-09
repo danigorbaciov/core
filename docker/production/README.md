@@ -1,7 +1,7 @@
 # ARK Core Docker
 
 <p align="center">
-    <img src="./teton-core-docker.png" width="100%" height="100%" />
+    <img src="./qredit-core-docker.png" width="100%" height="100%" />
 </p>
 
 ## Introduction
@@ -57,9 +57,9 @@ services:
       - SYS_RESOURCE
       - SYS_TIME
     volumes:
-     - ~/.config/teton-core:/home/node/.config/teton-core
-     - ~/.local/share/teton-core:/home/node/.local/share/teton-core
-     - ~/.local/state/teton-core:/home/node/.local/state/teton-core
+     - ~/.config/qredit-core:/home/node/.config/qredit-core
+     - ~/.local/share/qredit-core:/home/node/.local/share/qredit-core
+     - ~/.local/state/qredit-core:/home/node/.local/state/qredit-core
      - /etc/timezone:/etc/timezone:ro
      - /etc/localtime:/etc/localtime:ro
      - ./enc:/run/secrets
@@ -136,9 +136,9 @@ services:
       - SYS_RESOURCE
       - SYS_TIME
     volumes:
-     - ~/.config/teton-core:/home/node/.config/teton-core
-     - ~/.local/share/teton-core:/home/node/.local/share/teton-core
-     - ~/.local/state/teton-core:/home/node/.local/state/teton-core
+     - ~/.config/qredit-core:/home/node/.config/qredit-core
+     - ~/.local/share/qredit-core:/home/node/.local/share/qredit-core
+     - ~/.local/state/qredit-core:/home/node/.local/state/qredit-core
      - /etc/timezone:/etc/timezone:ro
      - /etc/localtime:/etc/localtime:ro
      - ./enc:/run/secrets

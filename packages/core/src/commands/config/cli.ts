@@ -10,10 +10,10 @@ export class CommandLineInterfaceCommand extends BaseCommand {
 
     public static examples: string[] = [
         `Set the token that should be used for configuration
-$ teton config:cli --token=teton
+$ qredit config:cli --token=qredit
 `,
         `Switch the npm registry channel
-$ teton config:cli --channel=latest
+$ qredit config:cli --channel=latest
 `,
     ];
 

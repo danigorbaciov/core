@@ -73,9 +73,9 @@ export class Blockchain implements blockchain.IBlockchain {
 
         if (this.state.networkStart) {
             logger.warn(
-                "Teton Core is launched in Genesis Start mode. This is usually for starting the first node on the blockchain. Unless you know what you are doing, this is likely wrong.",
+                "Qredit Core is launched in Genesis Start mode. This is usually for starting the first node on the blockchain. Unless you know what you are doing, this is likely wrong.",
             );
-            logger.info("Starting Teton Core for a new world, welcome aboard");
+            logger.info("Starting Qredit Core for a new world, welcome aboard");
         }
 
         this.actions = stateMachine.actionMap(this);

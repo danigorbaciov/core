@@ -9,7 +9,7 @@ export class ResetCommand extends BaseCommand {
 
     public static examples: string[] = [
         `Reset the configuration for the mainnet network
-$ teton config:reset --network=mainnet
+$ qredit config:reset --network=mainnet
 `,
     ];
 
