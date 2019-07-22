@@ -52,7 +52,7 @@
         }
     },
     {
-        "height": 3600000,
+        "height": 3700000,
         "block": {
             "acceptExpiredTransactionTimestamps": false
       }
