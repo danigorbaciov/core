@@ -57,6 +57,6 @@
             "maxTransactions": 256,
             "maxPayload": 11000000,
             "acceptExpiredTransactionTimestamps": false
-      }
+        }
     }
 ]
