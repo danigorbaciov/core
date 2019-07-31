@@ -2,17 +2,17 @@ export const defaults = {
     // https://socketcluster.io/#!/docs/api-socketcluster
     server: {
         hostname: process.env.CORE_P2P_HOST || "0.0.0.0",
-        port: process.env.CORE_P2P_PORT || 8001,
+        port: process.env.CORE_P2P_PORT || 4101,
         logLevel: process.env.CORE_NETWORK_NAME === "testnet" ? 1 : 0,
     },
     /**
      * The minimum peer version we expect
      */
-    minimumVersions: ["^2.4 || ^2.5"],
+    minimumVersions: ["^2.4.15 || ^2.5"],
     /**
      * The number of peers we expect to be available to start a relay
      */
-    minimumNetworkReach: 2,
+    minimumNetworkReach: 20,
     /**
      * The timeout for requests to other peers
      */
@@ -62,5 +62,5 @@ export const defaults = {
     /**
      * Rate limit config, used in socket-server worker / master
      */
-    rateLimit: process.env.CORE_P2P_RATE_LIMIT || 300, // max number of messages per second per socket connection
+    rateLimit: process.env.CORE_P2P_RATE_LIMIT || 100, // max number of messages per second per socket connection
 };

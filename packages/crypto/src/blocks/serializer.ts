@@ -55,9 +55,9 @@ export class Serializer {
         buffer.writeUint32(block.height);
         buffer.append(block.previousBlockHex, "hex");
         buffer.writeUint32(block.numberOfTransactions);
-        buffer.writeUint64(block.totalAmount.toFixed ? +block.totalAmount.toFixed() : +block.totalAmount);
-        buffer.writeUint64(block.totalFee.toFixed ? +block.totalFee.toFixed() : +block.totalFee);
-        buffer.writeUint64(block.reward.toFixed ? +block.reward.toFixed() : +block.reward);
+        buffer.writeUint64(+block.totalAmount.toFixed());
+        buffer.writeUint64(+block.totalFee.toFixed());
+        buffer.writeUint64(+block.reward.toFixed());
         buffer.writeUint32(block.payloadLength);
         buffer.append(block.payloadHash, "hex");
         buffer.append(block.generatorPublicKey, "hex");
