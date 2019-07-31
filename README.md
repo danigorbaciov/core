@@ -13,8 +13,7 @@ This repository contains all plugins that make up the Qredit Core.
 
 ## API Documentation
 
--   API v1 : https://docs.ark.io/api/public/v1/
--   API v2 : https://docs.ark.io/api/public/v2/
+-   https://docs.ark.io/api/public/v2/
 
 ## GitHub Development Bounty
 
