@@ -8,7 +8,7 @@
     "pubKeyHash": 58,
     "nethash": "5e67037fd290ba7ab378e84a591d251c46eb9770eb134983771fd602233bf193",
     "wif": 187,
-    "slip44": 111,
+    "slip44": 1,
     "aip20": 0,
     "client": {
         "token": "XQR",
