@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.5.38] - 2020-01-21
+
+Rerelease of 2.5.37 due to some npm issues.
+
+## [2.5.37] - 2020-01-21
+
+### Fixed
+
+-   Remove banning when peer opens multiple sockets ([#3409])
+
+## [2.5.36] - 2020-01-21
+
+### Fixed
+
+-   Discard blocks containing too many transactions ([#3404])
+-   Disconnect when multiple sockets are opened from same IP ([#3404])
+-   Handle invalid WS opcodes ([#3404])
+-   Disconnect for p2p SocketCluster events that do not have a handler ([#3404])
+-   Handle payload with additional properties ([#3404])
+
 ## [2.5.31] - 2019-12-19
 
 ### Fixed
@@ -1013,3 +1033,5 @@ Closed security vulnerabilities:
 [#3208]: https://github.com/ARKEcosystem/core/pull/3208
 [#3331]: https://github.com/ARKEcosystem/core/pull/3331
 [#3354]: https://github.com/ARKEcosystem/core/pull/3354
+[#3404]: https://github.com/ARKEcosystem/core/pull/3404
+[#3409]: https://github.com/ARKEcosystem/core/pull/3409
