@@ -1,29 +1,17 @@
 import Joi from "@hapi/joi";
-import { blockId } from "../shared/schemas/block-id";
-import { pagination } from "../shared/schemas/pagination";
-
-const address: object = Joi.string()
-    .alphanum()
-    .length(34);
+import { lockIteratees, transactionIteratees, walletIteratees } from "../shared/iteratees";
+import { address, blockId, orderBy, pagination, publicKey, username, walletId } from "../shared/schemas";
 
 export const index: object = {
     query: {
         ...pagination,
         ...{
-            orderBy: Joi.string(),
-            address: Joi.string()
-                .alphanum()
-                .length(34),
-            publicKey: Joi.string()
-                .hex()
-                .length(66),
-            secondPublicKey: Joi.string()
-                .hex()
-                .length(66),
-            vote: Joi.string()
-                .hex()
-                .length(66),
-            username: Joi.string(),
+            orderBy: orderBy(walletIteratees),
+            address,
+            publicKey,
+            secondPublicKey: publicKey,
+            vote: publicKey,
+            username,
             balance: Joi.number().integer(),
             voteBalance: Joi.number()
                 .integer()
@@ -37,18 +25,18 @@ export const index: object = {
 
 export const show: object = {
     params: {
-        id: Joi.string(),
+        id: walletId,
     },
 };
 
 export const transactions: object = {
     params: {
-        id: Joi.string(),
+        id: walletId,
     },
     query: {
         ...pagination,
         ...{
-            orderBy: Joi.string(),
+            orderBy: orderBy(transactionIteratees),
             id: Joi.string()
                 .hex()
                 .length(64),
@@ -56,19 +44,16 @@ export const transactions: object = {
             type: Joi.number()
                 .integer()
                 .min(0),
+            typeGroup: Joi.number()
+                .integer()
+                .min(0),
             version: Joi.number()
                 .integer()
                 .positive(),
-            senderPublicKey: Joi.string()
-                .hex()
-                .length(66),
-            senderId: Joi.string()
-                .alphanum()
-                .length(34),
-            recipientId: Joi.string()
-                .alphanum()
-                .length(34),
             timestamp: Joi.number()
+                .integer()
+                .min(0),
+            nonce: Joi.number()
                 .integer()
                 .min(0),
             amount: Joi.number()
@@ -77,7 +62,7 @@ export const transactions: object = {
             fee: Joi.number()
                 .integer()
                 .min(0),
-            vendorFieldHex: Joi.string().hex(),
+            vendorField: Joi.string().max(255, "utf8"),
             transform: Joi.bool().default(true),
         },
     },
@@ -85,12 +70,12 @@ export const transactions: object = {
 
 export const transactionsSent: object = {
     params: {
-        id: Joi.string(),
+        id: walletId,
     },
     query: {
         ...pagination,
         ...{
-            orderBy: Joi.string(),
+            orderBy: orderBy(transactionIteratees),
             id: Joi.string()
                 .hex()
                 .length(64),
@@ -98,13 +83,17 @@ export const transactionsSent: object = {
             type: Joi.number()
                 .integer()
                 .min(0),
+            typeGroup: Joi.number()
+                .integer()
+                .min(0),
             version: Joi.number()
                 .integer()
                 .positive(),
-            recipientId: Joi.string()
-                .alphanum()
-                .length(34),
+            recipientId: address,
             timestamp: Joi.number()
+                .integer()
+                .min(0),
+            nonce: Joi.number()
                 .integer()
                 .min(0),
             amount: Joi.number()
@@ -113,7 +102,7 @@ export const transactionsSent: object = {
             fee: Joi.number()
                 .integer()
                 .min(0),
-            vendorFieldHex: Joi.string().hex(),
+            vendorField: Joi.string().max(255, "utf8"),
             transform: Joi.bool().default(true),
         },
     },
@@ -121,12 +110,12 @@ export const transactionsSent: object = {
 
 export const transactionsReceived: object = {
     params: {
-        id: Joi.string(),
+        id: walletId,
     },
     query: {
         ...pagination,
         ...{
-            orderBy: Joi.string(),
+            orderBy: orderBy(transactionIteratees),
             id: Joi.string()
                 .hex()
                 .length(64),
@@ -134,16 +123,18 @@ export const transactionsReceived: object = {
             type: Joi.number()
                 .integer()
                 .min(0),
+            typeGroup: Joi.number()
+                .integer()
+                .min(0),
             version: Joi.number()
                 .integer()
                 .positive(),
-            senderPublicKey: Joi.string()
-                .hex()
-                .length(66),
-            senderId: Joi.string()
-                .alphanum()
-                .length(34),
+            senderPublicKey: publicKey,
+            senderId: address,
             timestamp: Joi.number()
+                .integer()
+                .min(0),
+            nonce: Joi.number()
                 .integer()
                 .min(0),
             amount: Joi.number()
@@ -152,7 +143,7 @@ export const transactionsReceived: object = {
             fee: Joi.number()
                 .integer()
                 .min(0),
-            vendorFieldHex: Joi.string().hex(),
+            vendorField: Joi.string().max(255, "utf8"),
             transform: Joi.bool().default(true),
         },
     },
@@ -160,12 +151,25 @@ export const transactionsReceived: object = {
 
 export const votes: object = {
     params: {
-        id: Joi.string(),
+        id: walletId,
     },
     query: {
         ...pagination,
         ...{
             transform: Joi.bool().default(true),
+        },
+    },
+};
+
+export const locks: object = {
+    params: {
+        id: walletId,
+    },
+    query: {
+        ...pagination,
+        ...{
+            isExpired: Joi.bool(),
+            orderBy: orderBy(lockIteratees),
         },
     },
 };
@@ -174,7 +178,7 @@ export const search: object = {
     query: {
         ...pagination,
         ...{
-            orderBy: Joi.string(),
+            orderBy: orderBy(walletIteratees),
         },
     },
     payload: {
@@ -184,16 +188,10 @@ export const search: object = {
             .min(1)
             .max(50)
             .items(address),
-        publicKey: Joi.string()
-            .hex()
-            .length(66),
-        secondPublicKey: Joi.string()
-            .hex()
-            .length(66),
-        vote: Joi.string()
-            .hex()
-            .length(66),
-        username: Joi.string(),
+        publicKey,
+        secondPublicKey: publicKey,
+        vote: publicKey,
+        username,
         producedBlocks: Joi.number()
             .integer()
             .min(0),
@@ -202,6 +200,14 @@ export const search: object = {
             to: Joi.number().integer(),
         }),
         voteBalance: Joi.object().keys({
+            from: Joi.number()
+                .integer()
+                .min(0),
+            to: Joi.number()
+                .integer()
+                .min(0),
+        }),
+        lockedBalance: Joi.object().keys({
             from: Joi.number()
                 .integer()
                 .min(0),

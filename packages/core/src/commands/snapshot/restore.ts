@@ -1,4 +1,5 @@
 import { app } from "@arkecosystem/core-container";
+import { ApplicationEvents } from "@arkecosystem/core-event-emitter";
 import { EventEmitter } from "@arkecosystem/core-interfaces";
 import { SnapshotManager } from "@arkecosystem/core-snapshots";
 import { flags } from "@oclif/command";
@@ -27,9 +28,13 @@ export class RestoreCommand extends BaseCommand {
     };
 
     public async run(): Promise<void> {
-        const { flags } = await this.parseWithNetwork(RestoreCommand);
+        const { flags, paths } = await this.parseWithNetwork(RestoreCommand);
 
-        await setUpLite(flags);
+        this.abortRunningProcess(`${flags.token}-core`);
+        this.abortRunningProcess(`${flags.token}-forger`);
+        this.abortRunningProcess(`${flags.token}-relay`);
+
+        await setUpLite(flags, paths);
 
         if (!app.has("snapshots")) {
             this.error("The @arkecosystem/core-snapshots plugin is not installed.");
@@ -52,15 +57,15 @@ export class RestoreCommand extends BaseCommand {
             cliProgress.Presets.shades_classic,
         );
 
-        emitter.on("start", data => {
+        emitter.on(ApplicationEvents.SnapshotStart, data => {
             progressBar.start(data.count, 1);
         });
 
-        emitter.on("progress", data => {
+        emitter.on(ApplicationEvents.SnapshotProgress, data => {
             progressBar.update(data.value);
         });
 
-        emitter.on("complete", data => {
+        emitter.on(ApplicationEvents.SnapshotComplete, data => {
             progressBar.stop();
         });
 

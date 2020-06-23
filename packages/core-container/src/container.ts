@@ -1,6 +1,8 @@
+import { ApplicationEvents } from "@arkecosystem/core-event-emitter";
 import { Container as container, EventEmitter, Logger } from "@arkecosystem/core-interfaces";
 import { createContainer, Resolver } from "awilix";
 import delay from "delay";
+import logProcessErrors from "log-process-errors";
 import semver from "semver";
 import { configManager } from "./config";
 import { Environment } from "./environment";
@@ -48,6 +50,11 @@ export class Container implements container.IContainer {
         // Register the environment variables
         const environment: Environment = new Environment(variables);
         environment.setUp();
+
+        if (process.env.CORE_LOG_PROCESS_ERRORS_ENABLED) {
+            // just log stuff, don't kill the process on unhandled promises/exceptions
+            logProcessErrors({ exitOn: [] });
+        }
 
         // Mainly used for testing environments!
         if (options.skipPlugins) {
@@ -101,6 +108,7 @@ export class Container implements container.IContainer {
             return undefined;
         }
     }
+
     public resolveOptions(key) {
         return this.container.resolve<container.IPluginConfig<any>>(`pkg.${key}.opts`);
     }
@@ -168,7 +176,9 @@ export class Container implements container.IContainer {
 
                 try {
                     // Notify plugins about shutdown
-                    this.resolvePlugin<EventEmitter.EventEmitter>("event-emitter").emit("shutdown");
+                    this.resolvePlugin<EventEmitter.EventEmitter>("event-emitter").emit(
+                        ApplicationEvents.ApplicationShutdown,
+                    );
 
                     // Wait for event to be emitted and give time to finish
                     await delay(1000);

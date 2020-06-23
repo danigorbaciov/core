@@ -1,5 +1,4 @@
 import { Machine } from "xstate";
-import { fork } from "./actions/fork";
 import { syncWithNetwork } from "./actions/sync-with-network";
 
 export const blockchainMachine: any = Machine({
@@ -37,6 +36,7 @@ export const blockchainMachine: any = Machine({
                 WAKEUP: "syncWithNetwork",
                 NEWBLOCK: "newBlock",
                 STOP: "stopped",
+                FORK: "fork",
             },
         },
         newBlock: {
@@ -53,7 +53,6 @@ export const blockchainMachine: any = Machine({
                 FAILURE: "exit",
                 STOP: "stopped",
             },
-            ...fork,
         },
         rollback: {
             onEntry: ["rollbackDatabase"],
