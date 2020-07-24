@@ -21,8 +21,20 @@ export class TransactionsRepository extends Repository implements Database.ITran
         const params = parameters.parameters;
 
         if (params.length) {
+            // Special handling when called for `/wallets/transactions` endpoint
+            let walletAddress: string;
+            let walletPublicKey: string;
+
             // 'search' doesn't support custom-op 'ownerId' like 'findAll' can
-            const ops = params.filter(value => value.operator !== Database.SearchOperator.OP_CUSTOM);
+            const ops = params.filter(value => {
+                if (value.field === "walletAddress") {
+                    walletAddress = value.value;
+                } else if (value.field === "walletPublicKey") {
+                    walletPublicKey = value.value;
+                }
+
+                return value.operator !== Database.SearchOperator.OP_CUSTOM;
+            });
 
             const [participants, rest] = partition(ops, op =>
                 ["sender_public_key", "recipient_id"].includes(this.propToColumnName(op.field)),
@@ -56,11 +68,27 @@ export class TransactionsRepository extends Repository implements Database.ITran
                     const recipientWallet: State.IWallet = walletManager.findByAddress(first.value);
 
                     for (const query of [selectQuery, selectQueryCount]) {
-                        query.or(
-                            this.query.sender_public_key
-                                .equals(recipientWallet.publicKey)
-                                .and(this.query.recipient_id.isNull()),
-                        );
+                        query
+                            .or(
+                                this.query.sender_public_key
+                                    .equals(recipientWallet.publicKey)
+                                    .and(this.query.recipient_id.isNull()),
+                            )
+                            .or(
+                                // Include multipayment recipients
+                                this.query.type
+                                    .equals(Enums.TransactionType.MultiPayment)
+                                    .and(this.query.type_group.equals(Enums.TransactionTypeGroup.Core))
+                                    .and(
+                                        this.query.asset.contains({
+                                            payments: [
+                                                {
+                                                    recipientId: first.value,
+                                                },
+                                            ],
+                                        }),
+                                    ),
+                            );
                     }
                 }
             } else if (rest.length) {
@@ -68,6 +96,34 @@ export class TransactionsRepository extends Repository implements Database.ITran
 
                 for (const query of [selectQuery, selectQueryCount]) {
                     query.where(this.query[this.propToColumnName(first.field)][first.operator](first.value));
+                }
+            }
+
+            if (walletAddress) {
+                const useWhere: boolean = !selectQuery.nodes.some(node => node.type === "WHERE");
+                for (const query of [selectQuery, selectQueryCount]) {
+                    let condition = this.query.recipient_id.equals(walletAddress).or(
+                        // Include multipayment recipients
+                        this.query.type
+                            .equals(Enums.TransactionType.MultiPayment)
+                            .and(this.query.type_group.equals(Enums.TransactionTypeGroup.Core))
+                            .and(
+                                this.query.asset.contains({
+                                    payments: [
+                                        {
+                                            recipientId: walletAddress,
+                                        },
+                                    ],
+                                }),
+                            ),
+                    );
+
+                    // We do not know public key for cold wallets
+                    if (walletPublicKey) {
+                        condition = condition.or(this.query.sender_public_key.equals(walletPublicKey));
+                    }
+
+                    query[useWhere ? "where" : "and"](condition);
                 }
             }
 
@@ -119,8 +175,12 @@ export class TransactionsRepository extends Repository implements Database.ITran
         return this.db.manyOrNone(queries.transactions.latestByBlocks, { ids });
     }
 
-    public async getAssetsByType(type: Enums.TransactionTypes | number): Promise<any> {
-        return this.db.manyOrNone(queries.stateBuilder.assetsByType, { type });
+    public async getCountOfType(type: number, typeGroup: number = Enums.TransactionTypeGroup.Core): Promise<any> {
+        return +(await this.db.one(queries.stateBuilder.countType, { typeGroup, type })).count;
+    }
+
+    public async getAssetsByType(type: number, typeGroup: number, limit: number, offset: number): Promise<any> {
+        return this.db.manyOrNone(queries.stateBuilder.assetsByType, { typeGroup, type, limit, offset });
     }
 
     public async getReceivedTransactions(): Promise<any> {
@@ -133,6 +193,22 @@ export class TransactionsRepository extends Repository implements Database.ITran
 
     public async forged(ids: string[]): Promise<Interfaces.ITransactionData[]> {
         return this.db.manyOrNone(queries.transactions.forged, { ids });
+    }
+
+    public async getOpenHtlcLocks(): Promise<any> {
+        return this.db.manyOrNone(queries.stateBuilder.openLocks);
+    }
+
+    public async getRefundedHtlcLocks(): Promise<any> {
+        return this.db.manyOrNone(queries.stateBuilder.refundedLocks);
+    }
+
+    public async getClaimedHtlcLocks(): Promise<any> {
+        return this.db.manyOrNone(queries.stateBuilder.claimedLocks);
+    }
+
+    public async findByHtlcLocks(lockIds: string[]): Promise<Interfaces.ITransactionData[]> {
+        return this.db.manyOrNone(queries.transactions.findByHtlcLocks, { ids: lockIds });
     }
 
     public async statistics(): Promise<{
@@ -160,24 +236,6 @@ export class TransactionsRepository extends Repository implements Database.ITran
         );
 
         return this.db.manyOrNone(queries.transactions.feeStatistics, { age, minFee });
-    }
-
-    public async findAllByWallet(
-        wallet: State.IWallet,
-        paginate?: Database.ISearchPaginate,
-        orderBy?: Database.ISearchOrderBy[],
-    ): Promise<Database.ITransactionsPaginated> {
-        const selectQuery = this.query.select();
-        const selectQueryCount = this.query.select(this.query.count().as("cnt"));
-
-        for (const query of [selectQuery, selectQueryCount]) {
-            query
-                .from(this.query)
-                .where(this.query.sender_public_key.equals(wallet.publicKey))
-                .or(this.query.recipient_id.equals(wallet.address));
-        }
-
-        return this.findManyWithCount(selectQuery, selectQueryCount, paginate, orderBy);
     }
 
     public getModel(): Transaction {

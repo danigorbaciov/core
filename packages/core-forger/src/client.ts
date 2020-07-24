@@ -1,7 +1,7 @@
 import { app } from "@arkecosystem/core-container";
 import { Logger, P2P } from "@arkecosystem/core-interfaces";
-import { NetworkState, NetworkStateStatus, socketEmit } from "@arkecosystem/core-p2p";
-import { Interfaces } from "@arkecosystem/crypto";
+import { codec, NetworkState, NetworkStateStatus, socketEmit } from "@arkecosystem/core-p2p";
+import { Blocks, Interfaces } from "@arkecosystem/crypto";
 import delay from "delay";
 import socketCluster from "socketcluster-client";
 import { HostNoResponseError, RelayCommunicationError } from "./errors";
@@ -20,6 +20,7 @@ export class Client {
                     initialDelay: 1000,
                     maxDelay: 1000,
                 },
+                codecEngine: codec,
             });
 
             host.socket.on("error", err => {
@@ -34,15 +35,20 @@ export class Client {
         this.host = this.hosts[0];
     }
 
-    public async broadcastBlock(block: Interfaces.IBlockJson): Promise<void> {
+    public async broadcastBlock(block: Interfaces.IBlock): Promise<void> {
         this.logger.debug(
-            `Broadcasting block ${block.height.toLocaleString()} (${block.id}) with ${
-                block.numberOfTransactions
+            `Broadcasting block ${block.data.height.toLocaleString()} (${block.data.id}) with ${
+                block.data.numberOfTransactions
             } transactions to ${this.host.hostname}`,
         );
 
         try {
-            await this.emit("p2p.peer.postBlock", { block });
+            await this.emit("p2p.peer.postBlock", {
+                block: Blocks.Block.serializeWithTransactions({
+                    ...block.data,
+                    transactions: block.transactions.map(tx => tx.data),
+                }),
+            });
         } catch (error) {
             this.logger.error(`Broadcast block failed: ${error.message}`);
         }
@@ -80,7 +86,7 @@ export class Client {
 
     public async emitEvent(
         event: string,
-        body: { error: string } | Interfaces.IBlockData | Interfaces.ITransactionData,
+        body: { error: string } | { activeDelegates: string[] } | Interfaces.IBlockData | Interfaces.ITransactionData,
     ): Promise<void> {
         // NOTE: Events need to be emitted to the localhost. If you need to trigger
         // actions on a remote host based on events you should be using webhooks

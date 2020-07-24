@@ -1,7 +1,7 @@
 import { app } from "@arkecosystem/core-container";
 import { Blockchain, Database, Logger, P2P, TransactionPool } from "@arkecosystem/core-interfaces";
 import { isBlockChained } from "@arkecosystem/core-utils";
-import { Crypto, Interfaces } from "@arkecosystem/crypto";
+import { Blocks, Crypto, Interfaces } from "@arkecosystem/crypto";
 import pluralize from "pluralize";
 import { MissingCommonBlockError } from "../../errors";
 import { IPeerPingResponse } from "../../interfaces";
@@ -54,7 +54,24 @@ export const getStatus = async (): Promise<IPeerPingResponse> => {
 export const postBlock = async ({ req }): Promise<void> => {
     const blockchain: Blockchain.IBlockchain = app.resolvePlugin<Blockchain.IBlockchain>("blockchain");
 
-    const block: Interfaces.IBlockData = req.data.block;
+    const blockHex: string = (req.data.block as Buffer).toString("hex");
+
+    const deserializedHeader = Blocks.Deserializer.deserialize(blockHex, true);
+
+    if (deserializedHeader.data.numberOfTransactions > app.getConfig().getMilestone().block.maxTransactions) {
+        throw new TooManyTransactionsError(deserializedHeader.data);
+    }
+
+    const deserialized: {
+        data: Interfaces.IBlockData;
+        transactions: Interfaces.ITransaction[];
+    } = Blocks.Deserializer.deserialize(blockHex);
+
+    const block: Interfaces.IBlockData = {
+        ...deserialized.data,
+        transactions: deserialized.transactions.map(tx => tx.data),
+    };
+
     const fromForger: boolean = isWhitelisted(app.resolveOptions("p2p").remoteAccess, req.headers.remoteAddress);
 
     if (!fromForger) {
@@ -108,14 +125,12 @@ export const getBlocks = async ({ req }): Promise<Interfaces.IBlockData[] | Data
     const reqBlockHeight: number = +req.data.lastBlockHeight + 1;
     const reqBlockLimit: number = +req.data.blockLimit || 400;
     const reqHeadersOnly: boolean = !!req.data.headersOnly;
-    const reqSerialized: boolean = !!req.data.serialized; // TODO: remove in 2.6 and only return serialized blocks
 
-    let blocks: Interfaces.IBlockData[] | Database.IDownloadBlock[];
-    if (reqSerialized) {
-        blocks = await database.getBlocksForDownload(reqBlockHeight, reqBlockLimit, reqHeadersOnly);
-    } else {
-        blocks = await database.getBlocks(reqBlockHeight, reqBlockLimit, reqHeadersOnly);
-    }
+    const blocks: Database.IDownloadBlock[] = await database.getBlocksForDownload(
+        reqBlockHeight,
+        reqBlockLimit,
+        reqHeadersOnly,
+    );
 
     app.resolvePlugin<Logger.ILogger>("logger").info(
         `${mapAddr(req.headers.remoteAddress)} has downloaded ${pluralize(
@@ -125,5 +140,5 @@ export const getBlocks = async ({ req }): Promise<Interfaces.IBlockData[] | Data
         )} from height ${reqBlockHeight.toLocaleString()}`,
     );
 
-    return blocks || [];
+    return blocks;
 };

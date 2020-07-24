@@ -6,6 +6,7 @@ import pluralize from "pluralize";
 import zlib from "zlib";
 
 import { app } from "@arkecosystem/core-container";
+import { ApplicationEvents } from "@arkecosystem/core-event-emitter";
 import { EventEmitter, Logger } from "@arkecosystem/core-interfaces";
 import { Managers } from "@arkecosystem/crypto";
 
@@ -20,7 +21,14 @@ const fixData = (table, data) => {
     if (table === "blocks" && data.height === 1) {
         data.id = Managers.configManager.get("genesisBlock").id;
     }
-}
+
+    // For version=1 transactions the nonce is set automatically at database level (by a trigger
+    // on the transactions table). However, the database library we use is upset if we don't
+    // provide it, so supply a dummy value here.
+    if (table === "transactions" && data.version === 1) {
+        data.nonce = "0";
+    }
+};
 
 export const exportTable = async (table, options) => {
     const snapFileName = utils.getFilePath(table, options.meta.folder);
@@ -83,13 +91,13 @@ export const importTable = async (table, options) => {
     const saveData = async data => {
         if (data && data.length > 0) {
             const insert = options.database.pgp.helpers.insert(data, options.database.getColumnSet(table));
-            emitter.emit("progress", { value: counter, table });
+            emitter.emit(ApplicationEvents.SnapshotProgress, { value: counter, table });
             values = [];
             return options.database.db.none(insert);
         }
     };
 
-    emitter.emit("start", { count: options.meta[table].count });
+    emitter.emit(ApplicationEvents.SnapshotStart, { count: options.meta[table].count });
 
     // tslint:disable-next-line: await-promise
     for await (const record of readStream) {
@@ -115,7 +123,7 @@ export const importTable = async (table, options) => {
         await saveData(values);
     }
 
-    emitter.emit("complete");
+    emitter.emit(ApplicationEvents.SnapshotComplete);
 };
 
 export const verifyTable = async (table, options) => {

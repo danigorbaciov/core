@@ -1,6 +1,8 @@
+import { app } from "@arkecosystem/core-container";
 import { P2P } from "@arkecosystem/core-interfaces";
 import { create, SCClientSocket } from "socketcluster-client";
 import { PeerRepository } from "./peer-repository";
+import { codec } from "./utils/sc-codec";
 
 export class PeerConnector implements P2P.IPeerConnector {
     private readonly connections: PeerRepository<SCClientSocket> = new PeerRepository<SCClientSocket>();
@@ -71,7 +73,9 @@ export class PeerConnector implements P2P.IPeerConnector {
         const connection = create({
             port: peer.port,
             hostname: peer.ip,
-            perMessageDeflate: true,
+            ackTimeout: Math.max(app.resolveOptions("p2p").getBlocksTimeout, app.resolveOptions("p2p").verifyTimeout),
+            perMessageDeflate: false,
+            codecEngine: codec,
         });
 
         const socket = (connection as any).transport.socket;

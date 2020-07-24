@@ -51,13 +51,6 @@ export interface IBlockchain {
     clearAndStopQueue(): void;
 
     /**
-     * Hand the given transactions to the transaction handler.
-     * @param  {Array}   transactions
-     * @return {void}
-     */
-    postTransactions(transactions: Interfaces.ITransaction[]): Promise<void>;
-
-    /**
      * Push a block to the process queue.
      */
     handleIncomingBlock(block: Interfaces.IBlockData, fromForger?: boolean): void;
@@ -84,7 +77,7 @@ export interface IBlockchain {
      * @param  {Function} callback
      * @return {(Function|void)}
      */
-    processBlocks(blocks: Interfaces.IBlock[], callback: any): Promise<any>;
+    processBlocks(blocks: Interfaces.IBlockData[], callback: any): Promise<any>;
 
     /**
      * Called by forger to wake up and sync with the network.
@@ -146,4 +139,6 @@ export interface IBlockchain {
     pushPingBlock(block: Interfaces.IBlockData, fromForger?: boolean): void;
 
     replay(targetHeight?: number): Promise<void>;
+
+    checkMissingBlocks(): Promise<void>;
 }

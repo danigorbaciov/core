@@ -1,11 +1,17 @@
+import { P2P } from "@arkecosystem/core-interfaces";
 import Ajv from "ajv";
+import delay from "delay";
+
 import { cidr } from "ip";
+import { RateLimiter } from "../rate-limiter";
+import { buildRateLimiter } from "../utils";
+
 import SCWorker from "socketcluster/scworker";
-import { SocketErrors } from "../enums";
 import { requestSchemas } from "../schemas";
-import { RateLimiter } from "./rate-limiter";
+import { codec } from "../utils/sc-codec";
 import { validateTransactionLight } from "./utils/validate";
 
+const SOCKET_TIMEOUT = 2000;
 const MINUTE_IN_MILLISECONDS = 1000 * 60;
 const HOUR_IN_MILLISECONDS = MINUTE_IN_MILLISECONDS * 60;
 
@@ -16,16 +22,29 @@ export class Worker extends SCWorker {
     private handlers: string[] = [];
     private ipLastError: Record<string, number> = {};
     private rateLimiter: RateLimiter;
+    private rateLimitedEndpoints: any;
 
     public async run() {
         this.log(`Socket worker started, PID: ${process.pid}`);
 
+        this.scServer.setCodecEngine(codec);
+
+        await this.loadRateLimitedEndpoints();
         await this.loadConfiguration();
+
+        this.rateLimiter = buildRateLimiter({
+            rateLimit: this.config.rateLimit,
+            remoteAccess: this.config.remoteAccess,
+            whitelist: this.config.whitelist,
+        });
 
         // purge ipLastError every hour to free up memory
         setInterval(() => (this.ipLastError = {}), HOUR_IN_MILLISECONDS);
 
         await this.loadHandlers();
+
+        // @ts-ignore
+        this.scServer.wsServer._server.timeout = SOCKET_TIMEOUT;
 
         // @ts-ignore
         this.scServer.wsServer.on("connection", (ws, req) => {
@@ -39,10 +58,16 @@ export class Worker extends SCWorker {
             }
             this.handlePayload(ws, req);
         });
+        // @ts-ignore
+        this.httpServer.on("request", req => {
+            // @ts-ignore
+            if (req.method !== "GET" || req.url !== this.scServer.wsServer.options.path) {
+                this.setErrorForIpAndDestroy(req.socket);
+            }
+        });
+        // @ts-ignore
+        this.scServer.wsServer._server.on("connection", socket => this.handleSocket(socket));
         this.scServer.on("connection", socket => this.handleConnection(socket));
-        this.scServer.addMiddleware(this.scServer.MIDDLEWARE_HANDSHAKE_WS, (req, next) =>
-            this.handleHandshake(req, next),
-        );
         this.scServer.addMiddleware(this.scServer.MIDDLEWARE_EMIT, (req, next) => this.handleEmit(req, next));
     }
 
@@ -57,83 +82,63 @@ export class Worker extends SCWorker {
 
     private async loadConfiguration(): Promise<void> {
         const { data } = await this.sendToMasterAsync("p2p.utils.getConfig");
-
         this.config = data;
-        this.rateLimiter = new RateLimiter({
-            whitelist: [...this.config.whitelist, ...this.config.remoteAccess],
-            configurations: {
-                global: {
-                    rateLimit: this.config.rateLimit,
-                    blockDuration: 60 * 1, // 1 minute ban for now
-                },
-                endpoints: [
-                    {
-                        rateLimit: 1,
-                        duration: 4,
-                        endpoint: "p2p.peer.postBlock",
-                    },
-                    {
-                        rateLimit: 1,
-                        endpoint: "p2p.peer.getBlocks",
-                    },
-                    {
-                        rateLimit: 1,
-                        endpoint: "p2p.peer.getPeers",
-                    },
-                    {
-                        rateLimit: 2,
-                        endpoint: "p2p.peer.getStatus",
-                    },
-                    {
-                        rateLimit: 5,
-                        endpoint: "p2p.peer.getCommonBlocks",
-                    },
-                ],
-            },
-        });
+    }
+
+    private async loadRateLimitedEndpoints(): Promise<void> {
+        const { data } = await this.sendToMasterAsync("p2p.internal.getRateLimitedEndpoints", { data: {} });
+        this.rateLimitedEndpoints = (Array.isArray(data) ? data : []).reduce((object, value) => {
+            object[value] = true;
+            return object;
+        }, {});
+    }
+
+    private getRateLimitedEndpoints() {
+        return this.rateLimitedEndpoints;
     }
 
     private handlePayload(ws, req) {
         ws.removeAllListeners("ping");
         ws.removeAllListeners("pong");
         ws.prependListener("ping", () => {
-            this.setErrorForIpAndTerminate(ws, req);
+            this.setErrorForIpAndDestroy(req.socket);
         });
         ws.prependListener("pong", () => {
-            this.setErrorForIpAndTerminate(ws, req);
+            this.setErrorForIpAndDestroy(req.socket);
         });
 
         ws.prependListener("error", error => {
             if (error instanceof RangeError) {
-                this.setErrorForIpAndTerminate(ws, req);
+                this.setErrorForIpAndDestroy(req.socket);
             }
         });
 
         const messageListeners = ws.listeners("message");
         ws.removeAllListeners("message");
         ws.prependListener("message", message => {
-            if (ws._disconnected) {
-                return this.setErrorForIpAndTerminate(ws, req);
+            if (req.socket._disconnected) {
+                return this.setErrorForIpAndDestroy(req.socket);
             } else if (message === "#2") {
                 const timeNow: number = new Date().getTime() / 1000;
-                if (ws._lastPingTime && timeNow - ws._lastPingTime < 1) {
-                    return this.setErrorForIpAndTerminate(ws, req);
+                if (req.socket._lastPingTime && timeNow - req.socket._lastPingTime < 1) {
+                    return this.setErrorForIpAndDestroy(req.socket);
                 }
-                ws._lastPingTime = timeNow;
+                req.socket._lastPingTime = timeNow;
             } else if (message.length < 10) {
                 // except for #2 message, we should have JSON with some required properties
                 // (see below) which implies that message length should be longer than 10 chars
-                return this.setErrorForIpAndTerminate(ws, req);
+                return this.setErrorForIpAndDestroy(req.socket);
             } else {
                 try {
                     const parsed = JSON.parse(message);
                     if (parsed.event === "#disconnect") {
-                        ws._disconnected = true;
+                        req.socket._disconnected = true;
                     } else if (parsed.event === "#handshake") {
-                        if (ws._handshake) {
-                            return this.setErrorForIpAndTerminate(ws, req);
+                        if (req.socket._handshake) {
+                            return this.setErrorForIpAndDestroy(req.socket);
                         }
-                        ws._handshake = true;
+                        req.socket._handshake = true;
+                        clearTimeout(req.socket._connectionTimer);
                     } else if (
                         typeof parsed.event !== "string" ||
                         typeof parsed.data !== "object" ||
@@ -142,13 +147,14 @@ export class Worker extends SCWorker {
                             (parsed.event === "#disconnect" && typeof parsed.cid !== "undefined")) ||
                         !this.handlers.includes(parsed.event)
                     ) {
-                        return this.setErrorForIpAndTerminate(ws, req);
+                        return this.setErrorForIpAndDestroy(req.socket);
                     }
                 } catch (error) {
-                    return this.setErrorForIpAndTerminate(ws, req);
+                    return this.setErrorForIpAndDestroy(req.socket);
                 }
             }
 
+            // we call the other listeners ourselves
             for (const listener of messageListeners) {
                 listener(message);
             }
@@ -188,6 +194,19 @@ export class Worker extends SCWorker {
                     } else {
                         return true;
                     }
+                } else if (object.event === "p2p.peer.postBlock") {
+                    if (
+                        !(
+                            typeof object.data.data === "object" &&
+                            typeof object.data.data.block === "object" &&
+                            object.data.data.block.base64 === true &&
+                            typeof object.data.data.block.data === "string" &&
+                            Object.keys(object.data.data).length === 1 && // {block}
+                            Object.keys(object.data.data.block).length === 2
+                        ) // {base64, data}
+                    ) {
+                        return true;
+                    }
                 } else if (schema && !ajv.validate(schema, object.data.data)) {
                     return true;
                 }
@@ -216,9 +235,9 @@ export class Worker extends SCWorker {
         return false;
     }
 
-    private setErrorForIpAndTerminate(ws, req): void {
-        this.ipLastError[req.socket.remoteAddress] = Date.now();
-        ws.terminate();
+    private setErrorForIpAndDestroy(socket): void {
+        this.ipLastError[socket.remoteAddress] = Date.now();
+        socket.destroy();
     }
 
     private async handleConnection(socket): Promise<void> {
@@ -234,17 +253,29 @@ export class Worker extends SCWorker {
         }
     }
 
-    private async handleHandshake(req, next): Promise<void> {
-        const ip = req.socket.remoteAddress;
-        if (this.ipLastError[ip] && this.ipLastError[ip] > Date.now() - MINUTE_IN_MILLISECONDS) {
-            req.socket.destroy();
+    private async handleSocket(socket): Promise<void> {
+        const ip = socket.remoteAddress;
+        if (!ip || (this.ipLastError[ip] && this.ipLastError[ip] > Date.now() - MINUTE_IN_MILLISECONDS)) {
+            socket.destroy();
             return;
         }
 
-        const isBlocked = await this.rateLimiter.isBlocked(ip);
-        const isBlacklisted = (this.config.blacklist || []).includes(ip);
-        if (isBlocked || isBlacklisted) {
-            next(this.createError(SocketErrors.Forbidden, "Blocked due to rate limit or blacklisted."));
+        socket._connectionTimer = setTimeout(() => {
+            if (!socket._handshake) {
+                this.setErrorForIpAndDestroy(socket);
+            }
+        }, SOCKET_TIMEOUT * 2);
+
+        const { data }: { data: { blocked: boolean } } = await this.sendToMasterAsync(
+            "p2p.internal.isBlockedByRateLimit",
+            {
+                data: { ip },
+            },
+        );
+
+        const isBlacklisted: boolean = (this.config.blacklist || []).includes(ip);
+        if (data.blocked || isBlacklisted) {
+            socket.destroy();
             return;
         }
 
@@ -253,48 +284,58 @@ export class Worker extends SCWorker {
             client => cidr(`${client.remoteAddress}/24`) === cidrRemoteAddress,
         );
         if (sameSubnetSockets.length > this.config.maxSameSubnetPeers) {
-            req.socket.destroy();
+            socket.destroy();
             return;
         }
-
-        next();
     }
 
     private async handleEmit(req, next): Promise<void> {
-        if (await this.rateLimiter.hasExceededRateLimit(req.socket.remoteAddress, req.event)) {
-            if (await this.rateLimiter.isBlocked(req.socket.remoteAddress)) {
+        if (req.event.length > 128) {
+            req.socket.terminate();
+            return;
+        }
+        const rateLimitedEndpoints = this.getRateLimitedEndpoints();
+        const useLocalRateLimiter: boolean = !rateLimitedEndpoints[req.event];
+        if (useLocalRateLimiter) {
+            if (await this.rateLimiter.hasExceededRateLimit(req.socket.remoteAddress, req.event)) {
+                req.socket.terminate();
+                return;
+            }
+        } else {
+            const { data }: { data: P2P.IRateLimitStatus } = await this.sendToMasterAsync(
+                "p2p.internal.getRateLimitStatus",
+                {
+                    data: {
+                        ip: req.socket.remoteAddress,
+                        endpoint: req.event,
+                    },
+                },
+            );
+            if (data.exceededLimitOnEndpoint) {
+                req.socket.terminate();
+                return;
+            }
+        }
+
+        // ensure basic format of incoming data, req.data must be as { data, headers }
+        if (typeof req.data !== "object" || typeof req.data.data !== "object" || typeof req.data.headers !== "object") {
+            req.socket.terminate();
+            return;
+        }
+
+        try {
+            const [prefix, version, handler] = req.event.split(".");
+
+            if (prefix !== "p2p") {
                 req.socket.terminate();
                 return;
             }
 
-            return next(this.createError(SocketErrors.RateLimitExceeded, "Rate limit exceeded"));
-        }
-
-        // @TODO: check if this is still needed
-        if (!req.data) {
-            return next(this.createError(SocketErrors.HeadersRequired, "Request data and is mandatory"));
-        }
-
-        try {
-            if (req.event.length > 128) {
-                req.socket.disconnect(4413, "Payload Too Large");
-                return;
-            }
-
-            const [prefix, version, handler] = req.event.split(".");
-
-            if (prefix !== "p2p") {
-                req.socket.disconnect(4404, "Not Found");
-                return;
-            }
-
             // Check that blockchain, tx-pool and p2p are ready
-            const isAppReady: any = await this.sendToMasterAsync("p2p.utils.isAppReady");
-
-            for (const [plugin, ready] of Object.entries(isAppReady.data)) {
-                if (!ready) {
-                    return next(this.createError(SocketErrors.AppNotReady, `${plugin} isn't ready!`));
-                }
+            const isAppReady: boolean = (await this.sendToMasterAsync("p2p.utils.isAppReady")).data.ready;
+            if (!isAppReady) {
+                next(new Error("App is not ready."));
+                return;
             }
 
             if (version === "internal") {
@@ -308,18 +349,7 @@ export class Worker extends SCWorker {
                 }
             } else if (version === "peer") {
                 const requestSchema = requestSchemas.peer[handler];
-                if (["postTransactions", "postBlock"].includes(handler)) {
-                    // has to be in the peer list to use the endpoint
-                    const {
-                        data: { isPeerOrForger },
-                    } = await this.sendToMasterAsync("p2p.internal.isPeerOrForger", {
-                        data: { ip: req.socket.remoteAddress },
-                    });
-                    if (!isPeerOrForger) {
-                        req.socket.terminate();
-                        return;
-                    }
-                } else if (requestSchema && !ajv.validate(requestSchema, req.data.data)) {
+                if (handler !== "postTransactions" && requestSchema && !ajv.validate(requestSchema, req.data.data)) {
                     req.socket.terminate();
                     return;
                 }
@@ -327,9 +357,11 @@ export class Worker extends SCWorker {
                 this.sendToMasterAsync("p2p.internal.acceptNewPeer", {
                     data: { ip: req.socket.remoteAddress },
                     headers: req.data.headers,
+                }).catch(ex => {
+                    this.log(`Failed to accept new peer ${req.socket.remoteAddress}: ${ex.message}`, "debug");
                 });
             } else {
-                req.socket.disconnect(4400, "Bad Request");
+                req.socket.terminate();
                 return;
             }
 
@@ -340,13 +372,10 @@ export class Worker extends SCWorker {
         } catch (e) {
             this.log(e.message, "error");
 
-            if (e.name === SocketErrors.Validation) {
-                return next(e);
-            }
-
-            return next(this.createError(SocketErrors.Unknown, "Unknown error"));
+            req.socket.terminate();
+            return;
         }
-
+        await delay(1);
         next();
     }
 
@@ -370,13 +399,6 @@ export class Worker extends SCWorker {
                 (err, res) => (err ? reject(err) : resolve(res)),
             );
         });
-    }
-
-    private createError(name, message): Error {
-        const error: Error = new Error(message);
-        error.name = name;
-
-        return error;
     }
 }
 

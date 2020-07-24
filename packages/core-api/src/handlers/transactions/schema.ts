@@ -1,17 +1,13 @@
 import { app } from "@arkecosystem/core-container";
 import Joi from "@hapi/joi";
-import { blockId } from "../shared/schemas/block-id";
-import { pagination } from "../shared/schemas/pagination";
-
-const address: object = Joi.string()
-    .alphanum()
-    .length(34);
+import { transactionIteratees } from "../shared/iteratees";
+import { address, blockId, orderBy, pagination, publicKey } from "../shared/schemas";
 
 export const index: object = {
     query: {
         ...pagination,
         ...{
-            orderBy: Joi.string(),
+            orderBy: orderBy(transactionIteratees),
             id: Joi.string()
                 .hex()
                 .length(64),
@@ -19,19 +15,19 @@ export const index: object = {
             type: Joi.number()
                 .integer()
                 .min(0),
+            typeGroup: Joi.number()
+                .integer()
+                .min(0),
             version: Joi.number()
                 .integer()
                 .positive(),
-            senderPublicKey: Joi.string()
-                .hex()
-                .length(66),
-            senderId: Joi.string()
-                .alphanum()
-                .length(34),
-            recipientId: Joi.string()
-                .alphanum()
-                .length(34),
+            senderPublicKey: publicKey,
+            senderId: address,
+            recipientId: address,
             timestamp: Joi.number()
+                .integer()
+                .min(0),
+            nonce: Joi.number()
                 .integer()
                 .min(0),
             amount: Joi.number()
@@ -40,7 +36,7 @@ export const index: object = {
             fee: Joi.number()
                 .integer()
                 .min(0),
-            vendorFieldHex: Joi.string().hex(),
+            vendorField: Joi.string().max(255, "utf8"),
             transform: Joi.bool().default(true),
         },
     },
@@ -95,7 +91,7 @@ export const search: object = {
         },
     },
     payload: {
-        orderBy: Joi.string(),
+        orderBy: orderBy(transactionIteratees),
         id: Joi.string()
             .hex()
             .length(64),
@@ -103,12 +99,13 @@ export const search: object = {
         type: Joi.number()
             .integer()
             .min(0),
+        typeGroup: Joi.number()
+            .integer()
+            .min(0),
         version: Joi.number()
             .integer()
             .positive(),
-        senderPublicKey: Joi.string()
-            .hex()
-            .length(66),
+        senderPublicKey: publicKey,
         senderId: address,
         recipientId: address,
         addresses: Joi.array()
@@ -116,7 +113,7 @@ export const search: object = {
             .min(1)
             .max(50)
             .items(address),
-        vendorFieldHex: Joi.string().hex(),
+        vendorField: Joi.string().max(255, "utf8"),
         timestamp: Joi.object().keys({
             from: Joi.number()
                 .integer()
@@ -125,6 +122,9 @@ export const search: object = {
                 .integer()
                 .min(0),
         }),
+        nonce: Joi.number()
+            .integer()
+            .min(0),
         amount: Joi.object().keys({
             from: Joi.number()
                 .integer()
