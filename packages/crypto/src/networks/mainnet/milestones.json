@@ -4,7 +4,6 @@
     "reward": 0,
     "activeDelegates": 51,
     "blocktime": 8,
-    "vendorFieldLength": 255
     "block": {
       "version": 0,
       "maxTransactions": 256,
@@ -13,7 +12,6 @@
       "idFullSha256": true
     },
     "epoch": "2021-01-21T21:21:21.000Z",
-    "htlcEnabled": false,
     "aip11": true,
     "fees": {
       "staticFees": {
@@ -27,5 +25,7 @@
         "delegateResignation": 2500000000
       }
     },
+    "htlcEnabled": false,
+    "vendorFieldLength": 255
   }
 ]
