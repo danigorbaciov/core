@@ -13,5 +13,5 @@
       "port": 5102
     }
   ],
-  "sources": []
+  "sources": [ "sources": ["https://raw.githubusercontent.com/Qredit/peers/v2/mainnet.json"]]
 }
