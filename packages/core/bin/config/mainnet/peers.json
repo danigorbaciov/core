@@ -1,17 +1,4 @@
 {
-  "list": [
-    {
-      "ip": "127.0.0.1",
-      "port": 5102
-    },
-    {
-      "ip": "127.0.0.2",
-      "port": 5102
-    },
-    {
-      "ip": "127.0.0.3",
-      "port": 5102
-    }
-  ],
-  "sources": [ "sources": ["https://raw.githubusercontent.com/Qredit/peers/v2/mainnet.json"]]
+  "list": [],
+  "sources": ["https://raw.githubusercontent.com/Qredit/peers/v2/mainnet.json"]
 }
