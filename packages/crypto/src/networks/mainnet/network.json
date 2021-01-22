@@ -13,6 +13,6 @@
   "client": {
     "token": "XQR",
     "symbol": "XQR",
-    "explorer": "https://explorer.sh/#"
+    "explorer": "https://explorer.sh"
   }
 }
