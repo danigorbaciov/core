@@ -2,7 +2,7 @@ module.exports = {
     "@arkecosystem/core-event-emitter": {},
     "@arkecosystem/core-logger-pino": {},
     "@arkecosystem/core-p2p": {
-        minimumNetworkReach: 5,
+        minimumNetworkReach: 17,
         server: {
             port: process.env.CORE_P2P_PORT || 5102,
         },
@@ -23,7 +23,7 @@ module.exports = {
         maxTransactionsPerSender: process.env.CORE_TRANSACTION_POOL_MAX_PER_SENDER || 300,
         allowedSenders: [],
         dynamicFees: {
-            enabled: false,
+            enabled: true,
             minFeePool: 3000,
             minFeeBroadcast: 3000,
             addonBytes: {
