@@ -41,5 +41,11 @@
   {
     "height": 185000,
     "reward": 100000000
-  }
+  },
+  {
+    "height": 195000,
+    "block": {
+            "idFullSha256": true
+        }
+   }
 ]
