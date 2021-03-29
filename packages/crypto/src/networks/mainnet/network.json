@@ -8,11 +8,11 @@
   "pubKeyHash": 75,
   "nethash": "7fadccaae136bfa7655aa1e1f2de440804abbf64af9f380ccfbef916e18b485c",
   "wif": 26,
-  "slip44": 2,
+  "slip44": 111,
   "aip20": 0,
   "client": {
     "token": "XQR",
     "symbol": "XQR",
-    "explorer": "https://explorer.sh"
+    "explorer": "https://explorer.qredit.io/#"
   }
 }
