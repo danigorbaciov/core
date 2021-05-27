@@ -12,7 +12,7 @@ export const defaults = {
     /**
      * The number of peers we expect to be available to start a relay
      */
-    minimumNetworkReach: 20,
+    minimumNetworkReach: 4,
     /**
      * The timeout to verify a peer. [milliseconds]
      */
@@ -29,7 +29,7 @@ export const defaults = {
     /**
      * The maximum authorized number of peers sharing same ip /24 subnet
      */
-    maxSameSubnetPeers: process.env.CORE_P2P_MAX_PEERS_SAME_SUBNET || 5,
+    maxSameSubnetPeers: process.env.CORE_P2P_MAX_PEERS_SAME_SUBNET || 51,
     /**
      * The list of IPs we allow to be added to the peer list.
      */
