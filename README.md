@@ -8,7 +8,7 @@ This repository contains all plugins that make up the Qredit Core.
 
 ## Documentation
 
--   Development : http://docs.qredit.network/nodes/relay-node-install.html
+-   To deploy a node, please visit https://github.com/qredit/core-control
 
 ## API Documentation
 
