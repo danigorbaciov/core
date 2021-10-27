@@ -1,18 +1,18 @@
 {
     "name": "testnet",
-    "messagePrefix": "TEST message:\n",
+    "messagePrefix": "dXQR message:\n",
     "bip32": {
         "public": 70617039,
         "private": 70615956
     },
-    "pubKeyHash": 23,
-    "nethash": "d9acd04bde4234a81addb8482333b4ac906bed7be5a9970ce8ada428bd083192",
-    "wif": 186,
+    "pubKeyHash": 58,
+    "nethash": "5e67037fd290ba7ab378e84a591d251c46eb9770eb134983771fd602233bf193",
+    "wif": 187,
     "slip44": 1,
     "aip20": 0,
     "client": {
-        "token": "TXQR",
-        "symbol": "TXQR",
-        "explorer": "http://texplorer.qredit.io"
+        "token": "dXQR",
+        "symbol": "dXQR",
+        "explorer": "https://explorer.sh/qredit-testnet"
     }
 }
