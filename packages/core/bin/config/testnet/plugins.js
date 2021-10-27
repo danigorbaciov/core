@@ -3,7 +3,7 @@ module.exports = {
     "@arkecosystem/core-logger-pino": {},
     "@arkecosystem/core-p2p": {
         server: {
-            port: process.env.CORE_P2P_PORT || 4100,
+            port: process.env.CORE_P2P_PORT || 4101,
         },
         minimumNetworkReach: 3,
     },
