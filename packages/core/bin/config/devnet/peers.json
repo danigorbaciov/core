@@ -1,17 +1,27 @@
 {
   "list": [
     {
-      "ip": "127.0.0.2",
-      "port": 4102
+      "ip": "35.163.173.247",
+      "port": 4101
     },
     {
-      "ip": "127.0.0.3",
-      "port": 4102
+      "ip": "116.203.33.4",
+      "port": 4101
     },
     {
-      "ip": "127.0.0.4",
-      "port": 4102
+      "ip": "116.203.56.119",
+      "port": 4101
+    },
+    {
+      "ip": "116.203.58.165",
+      "port": 4101
+    },
+    {
+      "ip": "159.69.89.41",
+      "port": 4101
     }
   ],
-  "sources": []
+  "sources": [
+    "https://raw.githubusercontent.com/Qredit/peers/master/devnet.json"
+  ]
 }

@@ -6,9 +6,9 @@
         "blocktime": 8,
         "block": {
             "version": 0,
-            "idFullSha256": true,
-            "maxTransactions": 500,
-            "maxPayload": 21000000
+            "maxTransactions": 50,
+            "maxPayload": 2097152,
+            "acceptExpiredTransactionTimestamps": true
         },
         "epoch": "2017-03-21T13:00:00.000Z",
         "fees": {
@@ -26,10 +26,44 @@
                 "htlcRefund": 0
             }
         },
-        "vendorFieldLength": 255
+        "vendorFieldLength": 64,
+        "multiPaymentLimit": 64
     },
     {
         "height": 75600,
         "reward": 200000000
+    },
+    {
+        "height": 170000,
+        "block": {
+            "maxTransactions": 150,
+            "maxPayload": 6300000
+        }
+    },
+    {
+        "height": 1888000,
+        "reward": 1000000000
+    },
+    {
+        "height": 2760000,
+        "vendorFieldLength": 255
+    },
+    {
+        "height": 2778000,
+        "block": {
+            "idFullSha256": true
+        }
+    },
+    {
+        "height": 3710000,
+        "block": {
+            "maxTransactions": 256,
+            "maxPayload": 11000000,
+            "acceptExpiredTransactionTimestamps": false
+        }
+    },
+    {
+        "height": 7556666,
+        "aip11": true
     }
 ]
